@@ -1,0 +1,45 @@
+{% extends 'layout.html' %}
+{% block titulo %}Carrito{% endblock %}
+{% block contenido %}
+
+<div class="container mt-4">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+        <div id="flashMessage" class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        <script>
+            setTimeout(function() {
+                $('#flashMessage').alert('close');
+            }, 5000); // Cierra el mensaje después de 5 segundos
+        </script>
+        {% endfor %}
+    {% endif %}
+    {% endwith %}
+    
+    
+    <table class="table table-bordered">
+        <h1 class="text-center">Pedido Pendientes</h1>
+        <br>
+        <thead class="thead-dark">
+            <tr>
+                <th>Fecha del Pedido</th>
+                <th>Monto Total</th>
+                <th>Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for pedido in pedidos %}
+            <tr>
+                <td>{{ pedido[1] }}</td>
+                <td>{{ pedido[2] }}</td>
+                <td><a href="/ir_a_pagos/{{ pedido[0] }}" class="btn btn-primary">Ir a Pagar</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

@@ -1,0 +1,186 @@
+{% extends 'layout.html' %}
+{% block titulo %}Ver Contactos{% endblock %}
+{% block custom_css %}
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background-color: #f4f4f9;
+    }
+
+    .container {
+        padding: 20px;
+    }
+
+    .card {
+        background-color: #ffffff;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+    }
+
+    .card-body {
+        padding: 20px;
+    }
+
+    .card-title {
+        font-size: 24px;
+        color: #333;
+    }
+
+    .card-text {
+        font-size: 16px;
+        color: #666;
+        line-height: 1.5;
+    }
+
+    .btn-primary {
+        background-color: #0056b3;
+        border-color: #004085;
+        color: #ffffff;
+    }
+
+    .btn-edit {
+        margin-top: 10px;
+        width: 100%;
+    }
+
+    .form-control {
+        border-radius: 5px;
+    }
+
+    .form-label {
+        font-weight: bold;
+    }
+
+    .modal-content {
+        border-radius: 8px;
+    }
+
+    @keyframes slideInUp {
+        from {
+            transform: translateY(20px);
+            opacity: 0;
+        }
+
+        to {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    }
+
+    .card {
+        animation: slideInUp 0.5s ease-out;
+    }
+</style>
+{% endblock %}
+
+{% block contenido %}
+
+
+<!-- <div class="container mt-5 container-perfil">
+    
+    
+
+
+
+</div> -->
+
+<div class="container">
+    <h2 class="mb-4">Perfil del Usuario</h2>
+    <div class="row">
+        <div class="col-sm-6 mb-3 mb-sm-0">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h5 class="card-title">{{ contactos[1] }} {{ contactos[4] }}</h5>
+                    <p class="card-text">
+                        <strong>Email:</strong> {{ contactos[2] }}<br>
+                        <strong>Teléfono:</strong> {{ contactos[3] }}<br>
+                        <strong>Nombre de Usuario:</strong> {{ contactos[5] }}<br>
+                        <strong>Contraseña:</strong> {{ contactos[6] }}<br>
+                        <strong>Fecha de Nacimiento:</strong> {{ contactos[7] }}<br>
+                    </p>
+                    <button class="btn btn-primary btn-edit" data-bs-toggle="modal" data-bs-target="#editModal">Editar
+                        Datos</button>
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-6">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Tarjetas</h5>
+                    {% for ta in tar %}
+                    <p class="card-text">
+                        <strong>Numero de tarjeta:</strong> {{ ta[1] }}<br>
+                        <strong>Nombre titular:</strong> {{ ta[2] }}<br>
+                        <strong>Fecha de vencimiento:</strong> {{ ta[3] }}<br>
+                        <strong>Código de seguridad:</strong> {{ ta[4] }}<br>
+                        <hr>
+                    </p>
+                    {% endfor %}
+                    <a href="/id_a_agregar_tarjeta" class="btn btn-primary">Agregar tarjeta</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editModalLabel">Actualizar Datos</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="updateForm" action="/editarContactos_user/{{ contactos[0] }}" method="post">
+                        <!-- Campos del formulario con estilo Bootstrap y validación de entrada -->
+                        <div class="mb-3">
+                            <label for="nombre" class="form-label">Nombre</label>
+                            <input type="text" name="nombre" class="form-control" id="nombre" value="{{ contactos[1] }}"
+                                required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="apellido" class="form-label">Apellido</label>
+                            <input type="text" name="apellido" class="form-control" id="apellido"
+                                value="{{ contactos[4] }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" name="email" class="form-control" id="email" value="{{ contactos[2] }}"
+                                required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="telefono" class="form-label">Teléfono</label>
+                            <input type="text" name="telefono" class="form-control" id="telefono"
+                                value="{{ contactos[3] }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Contraseña</label>
+                            <input type="password" name="password" class="form-control" id="password"
+                                value="{{ contactos[6] }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="fechaNacimiento" class="form-label">Fecha de Nacimiento</label>
+                            <input type="date" name="fechaNacimiento" class="form-control" id="fechaNacimiento"
+                                value="{{ contactos[7] }}" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    $('#editModal').on('show.bs.modal', function (e) {
+    var modal = $(this);
+    modal.css('display', 'none');
+    setTimeout(function() {
+        modal.fadeIn('slow');
+    }, 100);
+});
+
+</script>
+{% endblock %}
