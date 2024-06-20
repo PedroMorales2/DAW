@@ -178,3 +178,36 @@ def historial_detalle_pedido(id):
         persona = cursor.fetchall()
         return persona
     conexion.close()
+    
+
+def obtener_usuario_por_id_auth(id):
+    conexion = obtener_conexion()
+    usuario = None
+    try:
+        with conexion.cursor() as cursor:
+            cursor.execute(
+                "SELECT id, nombredeusuario, contraseña FROM usuarios WHERE id = %s", (id,))
+            usuario = cursor.fetchone()
+    except Exception as e:
+        print(f"Error durante la consulta: {e}")
+    finally:
+        conexion.close()
+    return usuario
+
+
+
+def obtener_user_por_username(username):
+    conexion = obtener_conexion()
+    usuario = None
+    try:
+        with conexion.cursor() as cursor:
+            print(f"Buscando usuario con nombredeusuario: {username}")
+            cursor.execute(
+                "SELECT id, nombredeusuario, contraseña FROM usuarios WHERE nombredeusuario = %s", (username,))
+            usuario = cursor.fetchone()
+            print(f"Resultado de la consulta: {usuario}")
+    except Exception as e:
+        print(f"Error durante la consulta: {e}")
+    finally:
+        conexion.close()
+    return usuario

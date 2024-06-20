@@ -1,13 +1,49 @@
 from flask import Flask, render_template, request, redirect, flash, jsonify, session, url_for
+from flask_jwt import JWT, jwt_required, current_identity
 from werkzeug.utils import secure_filename
 from werkzeug.security import check_password_hash
 import os
-import controlador_producto
-import controlador_usuario
 import requests
-app = Flask(__name__)
+import controladores.controlador_producto as controlador_producto
+import controladores.controlador_usuario as controlador_usuario
+import clases.clase_usuario as clase_usuario
+import clases.clase_producto as clase_producto
 
+
+class User(object):
+    def __init__(self, id, username, password):
+        self.id = id
+        self.username = username
+        self.password = password
+
+    def __str__(self):
+        return "User(id='%s')" % self.id
+
+def authenticate(username, password):
+    #user = username_table.get(username, None)
+    userfrombd = controlador_usuario.obtener_user_por_username(username)
+    user = None
+    if userfrombd is not None:
+        user = User(userfrombd[0], userfrombd[1], userfrombd[2])
+    if user is not None and user.password.encode('utf-8') == password.encode('utf-8'):
+        return user
+
+def identity(payload):
+    user_id = payload['identity']
+    userfrombd = controlador_usuario.obtener_usuario_por_id_auth(user_id)
+    user = None
+    if userfrombd is not None:
+        user = User(userfrombd[0], userfrombd[1], userfrombd[2])
+    #return userid_table.get(user_id, None)
+    return user
+
+app = Flask(__name__)
+app.debug = True
+app.config['SECRET_KEY'] = 'super-secret'
+
+jwt = JWT(app, authenticate, identity)
 app.secret_key = 'mysecretkey'
+
 
 ###### RUTAS USUARIO #####
 
@@ -465,6 +501,193 @@ def logout():
     
 
 
+
+
+
+
+
+#### APIS - USUARIOS ####
+
+
+
+@app.route("/api_obtenerusuarios")
+@jwt_required()
+def api_obtenerusuarios():
+    rpta = dict()
+    try:
+        listausuarios = []
+        usuarios = controlador_usuario.obtener_usuarios()
+        for usuario in usuarios:
+            try:
+                objUsuario = clase_usuario.clsUsuario(
+                    usuario[0], usuario[1], usuario[2],
+                    usuario[3], usuario[4], usuario[5],
+                    usuario[6], usuario[7], usuario[8],
+                    usuario[9]
+                )
+                listausuarios.append(objUsuario.diccusuario.copy())
+            except Exception as e:
+                print(f"Error procesando usuario: {e}")
+        rpta["code"] = 1
+        rpta["message"] = "Listado correcto de usuarios"
+        rpta["data"] = listausuarios
+        return jsonify(rpta)
+    except Exception as e:
+        rpta["code"] = 0
+        rpta["message"] = f"Problemas en el servicio web: {e}"
+        rpta["data"] = []
+        return jsonify(rpta)
+    
+@app.route("/api_guardarusuario", methods=["POST"])
+@jwt_required()
+def api_guardarusuario():
+    rpta=dict()
+    try:
+        nombre = request.json["nombre"]
+        email = request.json["email"]
+        telefono = request.json["telefono"]
+        apellido = request.json["apellido"]
+        nombre_usuario = request.json["nombredeusuario"]
+        contraseña = request.json["contraseña"]
+        fecha_nacimiento = request.json["fechaNacimiento"]
+        tipo_Usuario = request.json["tipo_usuario_id"]
+        idgenerado = controlador_usuario.insertar_usuario(nombre, email, telefono, apellido,
+                                                          nombre_usuario, contraseña, fecha_nacimiento,tipo_Usuario)
+        rpta["code"]=1
+        rpta["message"]="Usuario registrado correctamente"
+        rpta["data"]= {"idgenerado" : idgenerado}
+    except Exception as e:
+        rpta["code"]=0
+        rpta["message"]="Ocurrió un problema: " + repr(e)
+        rpta["data"]=dict()
+    return rpta
+
+@app.route("/api_actualizarusuario/<int:id>", methods=["PUT"])
+@jwt_required()
+def api_actualizarusuario(id):
+    rpta = dict()
+    try:
+        nombre = request.json["nombre"]
+        email = request.json["email"]
+        telefono = request.json["telefono"]
+        apellido = request.json["apellido"]
+        nombre_usuario = request.json["nombredeusuario"]
+        contraseña = request.json["contraseña"]
+        fecha_nacimiento = request.json["fechaNacimiento"]
+        tipo_Usuario = request.json["tipo_usuario_id"]
+        controlador_usuario.actualizar_usuario(nombre, email, telefono, apellido,
+                                               nombre_usuario, contraseña, fecha_nacimiento,
+                                               tipo_Usuario, id)
+        rpta["code"] = 1
+        rpta["message"] = "Usuario actualizado correctamente"
+    except Exception as e:
+        rpta["code"] = 0
+        rpta["message"] = "Ocurrió un problema: " + repr(e)
+    return jsonify(rpta)
+
+@app.route("/api_eliminarusuario/<int:id>", methods=["DELETE"])
+@jwt_required()
+def api_eliminarusuario(id):
+    rpta = dict()
+    try:
+        controlador_usuario.eliminar_usuario(id)
+        rpta["code"] = 1
+        rpta["message"] = "Usuario eliminado correctamente"
+    except Exception as e:
+        rpta["code"] = 0
+        rpta["message"] = "Ocurrió un problema: " + repr(e)
+    return jsonify(rpta)
+
+
+#### APIS - PRODUCTO ####
+
+
+@app.route("/api_obtenerproductos")
+@jwt_required()
+def api_obtenerproductos():
+    rpta = dict()
+    try:
+        listaproductos = []
+        productos = controlador_producto.obtener_producto()
+        for producto in productos:
+            try:
+                objProducto = clase_producto.clsProducto(
+                    producto[0], producto[1], producto[2],
+                    producto[3], producto[4], producto[5],
+                    producto[6], producto[7], producto[8],
+                    producto[9]
+                )
+                listaproductos.append(objProducto.diccproducto.copy())
+            except Exception as e:
+                print(f"Error procesando producto: {e}")
+        rpta["code"] = 1
+        rpta["message"] = "Listado correcto de productos"
+        rpta["data"] = listaproductos
+        return jsonify(rpta)
+    except Exception as e:
+        rpta["code"] = 0
+        rpta["message"] = f"Problemas en el servicio web: {e}"
+        rpta["data"] = []
+    return jsonify(rpta)
+
+@app.route("/api_guardarproducto", methods=["POST"])
+@jwt_required()
+def api_guardarproducto():
+    rpta = dict()
+    try:
+        nombre = request.json["nombre"]
+        descripcion = request.json["descripcion"]
+        precio = request.json["precio"]
+        stock = request.json["stock"]
+        id_categoria = request.json["categoria_id"]
+        imagen = request.json["imagen"]
+        talla = request.json["talla"]
+        genero = request.json["genero"]
+        idgenerado = controlador_producto.insertar_producto(nombre, descripcion, precio, stock,
+                                               id_categoria, imagen, talla, genero)
+        rpta["code"]=1
+        rpta["message"]="Producto registrado correctamente"
+        rpta["data"]= {"idgenerado" : idgenerado}
+    except Exception as e:
+        rpta["code"]=0
+        rpta["message"]="Ocurrió un problema: " + repr(e)
+        rpta["data"]=dict()
+    return jsonify(rpta)
+
+@app.route("/api_actualizarproducto/<int:id>", methods=["PUT"])
+@jwt_required()
+def api_actualizarproducto(id):
+    rpta = dict()
+    try:
+        nombre = request.json["nombre"]
+        descripcion = request.json["descripcion"]
+        precio = request.json["precio"]
+        stock = request.json["stock"]
+        id_categoria = request.json["categoria_id"]
+        imagen = request.json["imagen"]
+        talla = request.json["talla"]
+        genero = requests.json["genero"]
+        controlador_producto.actualizar_producto(nombre, descripcion, precio, stock,
+                                                  id_categoria, imagen, talla, genero ,id)
+        rpta["code"] = 1
+        rpta["message"] = "Producto actualizado correctamente"
+    except Exception as e:
+        rpta["code"] = 0
+        rpta["message"] = "Ocurrió un problema: " + repr(e)
+    return jsonify(rpta)
+
+@app.route("/api_eliminarproducto/<int:id>", methods=["DELETE"])
+@jwt_required()
+def api_eliminarproducto(id):
+    rpta = dict()
+    try:
+        controlador_producto.eliminar_producto(id)
+        rpta["code"] = 1
+        rpta["message"] = "Producto eliminado correctamente"
+    except Exception as e:
+        rpta["code"] = 0
+        rpta["message"] = "Ocurrió un problema: " + repr(e)
+    return jsonify(rpta)
 
 
 

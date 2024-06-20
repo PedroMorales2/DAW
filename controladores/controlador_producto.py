@@ -1,4 +1,7 @@
 from database.bd_goldenstore import obtener_conexion
+from pymysql.cursors import DictCursor
+from decimal import Decimal
+
 
 def insertar_producto( nombre, descripcion, precio,stock, id_Categoria, ruta_imagen_db, talla, genero):
     conexion = obtener_conexion()
@@ -105,10 +108,42 @@ def insertar_nuevo_pedido(user_id):
     conexion.close()
     return pedido
 
-#transaccion
-def guardar_detalle(id_producto, cantidad, id_user):
+
+
+
+def guardar_detalle(id_producto, cantidad, id_pedido):
     conexion = obtener_conexion()
-    with conexion.cursor() as cursor:
-        cursor.callproc('insertar_pedido', (id_producto, cantidad, id_user))
-    conexion.commit()
-    conexion.close()
+    try:
+        with conexion.cursor(DictCursor) as cursor:
+            cursor.execute("""
+                INSERT INTO detalles_pedido (pedido_id, producto_id, cantidad)
+                VALUES (%s, %s, %s)
+            """, (id_pedido, id_producto, cantidad))
+
+            cursor.execute("""
+                SELECT SUM(p.precio * dp.cantidad) AS total_pedido
+                FROM detalles_pedido dp
+                JOIN productos p ON dp.producto_id = p.id
+                WHERE dp.pedido_id = %s
+            """, (id_pedido,))
+            resultado = cursor.fetchone()
+            if resultado and resultado['total_pedido'] is not None:
+                factor_igv = Decimal('1.18')
+                total_pedido = resultado['total_pedido'] * factor_igv
+            else:
+                total_pedido = Decimal('0.00')
+
+            cursor.execute("""
+                UPDATE pedidos SET total = %s WHERE id = %s
+            """, (total_pedido, id_pedido))
+
+            cursor.execute("""
+                UPDATE productos SET stock = stock - %s WHERE id = %s
+            """, (cantidad, id_producto))
+
+            conexion.commit()
+    except Exception as e:
+        print("Ocurrió un error al procesar el detalle del pedido:", e)
+        conexion.rollback()
+    finally:
+        conexion.close()
