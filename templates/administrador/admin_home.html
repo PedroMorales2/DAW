@@ -25,7 +25,7 @@
                     <hr class="text-white d-none d-sm-block">
                     <ul class="nav nav-pills flex-column mt-4 mt-sm-0" id="menu">
                         <li class="nav-item my-sm-1 my-2">
-                            <a href="#" class="nav-link text-white text-center text-sm-start" aria-current="page">
+                            <a href="/admin_home" class="nav-link text-white text-center text-sm-start" aria-current="page">
                                 <i class="fa fa-gauge"></i>
                                 <span class="ms-2 d-none d-sm-inline">DashBaord</span>
                             </a>
@@ -43,16 +43,16 @@
                                 <span class="ms-2 d-none d-sm-inline">Usuarios</span>
                             </a>
                         </li>
+                        <li class="nav-item my-sm-1 my-2">
+                            <a href="{{ url_for('admin_crud') }}" class="nav-link text-white text-center text-sm-start" aria-current="page" data-content="usuarios">
+                            <i class="fa-solid fa-list"></i>
+                                <span class="ms-2 d-none d-sm-inline">CRUDS</span>
+                            </a>
+                        </li>
                     </ul>
                 </div>
                 <div>
                     <ul class="nav nav-pills flex-column mb-3 mt-2 mt-sm-0">
-                        <li class="nav-item my-sm-1 my-2">
-                            <a href="#" class="nav-link text-white text-center text-sm-start" aria-current="page" data-content="configuracion">
-                                <i class="fa fa-gear"></i>
-                                <span class="ms-1 d-none d-sm-inline">Configuración</span>
-                            </a>
-                        </li>
                         <li class="nav-item my-sm-1 my-2">
                             <a href="{{ url_for('index') }}" class="nav-link text-white text-center text-sm-start" aria-current="page" >
                                 <i class="fa-solid fa-arrow-right-from-bracket"></i>
@@ -75,11 +75,43 @@
                         <div class="contenido_lista">
                             {%block contenido %} {% endblock %}
                         </div>
-                    </div>  
+                    </div>
                 </div>
             </div>
         </div>
     </div>
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            window.confirmarAccion = function (button) {
+                const formulario = button.form;
+                event.preventDefault();
+
+                Swal.fire({
+                    title: '¿Estás seguro?',
+                    text: "¿Quieres enviar esta información?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Sí, enviar!',
+                    cancelButtonText: 'No, cancelar',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        formulario.submit();
+                    }
+                });
+            };
+        });
+
+    </script>
+
+
     <script src="../static/js/administrador_home.js"></script>
     <script src="https://kit.fontawesome.com/79be0d4522.js" crossorigin="anonymous"></script>
 </body>

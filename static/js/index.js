@@ -1,6 +1,6 @@
 // Funcion de Contador
 function countdown() {
-    const endDate = new Date('2024-05-31 00:00:00').getTime();
+    const endDate = new Date('2024-07-31 00:00:00').getTime();
 
     const timer = setInterval(function() {
         const now = new Date().getTime();

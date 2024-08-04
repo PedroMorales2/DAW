@@ -8,8 +8,10 @@ def insertar_producto( nombre, descripcion, precio,stock, id_Categoria, ruta_ima
     with conexion.cursor() as cursor: #La fecha_creacion --> se inserta automáticamente
         cursor.execute("INSERT INTO productos(nombre, descripcion, precio, stock,categoria_id, imagen, talla, genero ) VALUES (%s,%s,%s, %s, %s, %s, %s, %s)",
                        (nombre, descripcion, precio, stock, id_Categoria, ruta_imagen_db, talla, genero))
+        ultimo = cursor.lastrowid
     conexion.commit()
     conexion.close()
+    return ultimo
 
 def obtener_nombre_categoria():
     conexion = obtener_conexion()
@@ -25,17 +27,65 @@ def obtener_producto():
     conexion = obtener_conexion()
     usuarios = []
     with conexion.cursor() as cursor:
-        cursor.execute("SELECT id, nombre, descripcion, precio, stock,categoria_id, imagen, fecha_creacion, talla,genero  FROM productos")
+        cursor.execute("""
+        SELECT pro.id, pro.nombre, pro.descripcion, pro.precio, pro.stock,
+        ca.nombre, pro.imagen, pro.fecha_creacion, pro.talla,pro.genero  FROM productos pro
+        JOIN categorias ca ON ca.id = pro.categoria_id;
+        """)
         usuarios = cursor.fetchall()
     conexion.close()
     return usuarios
+
+def obtener_productox3():
+    conexion = obtener_conexion()
+    usuarios = []
+    with conexion.cursor() as cursor:
+        cursor.execute("""
+        SELECT pro.id, pro.nombre, pro.descripcion, pro.precio, pro.stock,
+        ca.nombre, pro.imagen, pro.fecha_creacion, pro.talla,pro.genero  FROM productos pro
+        JOIN categorias ca ON ca.id = pro.categoria_id where pro.stock > 0 limit 4 ;
+        """)
+        usuarios = cursor.fetchall()
+    conexion.close()
+    return usuarios
+
+def obtener_productox1():
+    conexion = obtener_conexion()
+    usuarios = []
+    with conexion.cursor() as cursor:
+        cursor.execute("""
+        SELECT imagen FROM productos LIMIT 4
+        """)
+        usuarios = cursor.fetchall()
+    conexion.close()
+    return usuarios
+
+def aleatorio():
+    conexion = obtener_conexion()
+    usuarios = []
+    with conexion.cursor() as cursor:
+        cursor.execute("""
+        SELECT imagen FROM productos ORDER BY RAND() LIMIT 1
+        """)
+        usuarios = cursor.fetchall()
+    conexion.close()
+    return usuarios
+
+#def eliminar_producto(id):
+ #   conexion = obtener_conexion()
+  #  with conexion.cursor() as cursor:
+   #     cursor.execute("DELETE FROM productos WHERE id = %s", (id,))
+    #conexion.commit()
+    #conexion.close()
 
 def eliminar_producto(id):
     conexion = obtener_conexion()
     with conexion.cursor() as cursor:
         cursor.execute("DELETE FROM productos WHERE id = %s", (id,))
+        filas_afectadas = cursor.rowcount
     conexion.commit()
     conexion.close()
+    return filas_afectadas > 0
 
 def obtener_producto_por_id(id):
     conexion = obtener_conexion()
@@ -48,13 +98,24 @@ def obtener_producto_por_id(id):
     print(juego)
     return juego
 
-def actualizar_producto( nombre, descripcion, precio,stock, id_Categoria, imagen, talla, id):
+#def actualizar_producto( nombre, descripcion, precio,stock, id_Categoria, imagen, talla, id):
+ #   conexion = obtener_conexion()
+  #  with conexion.cursor() as cursor:
+   #     cursor.execute("UPDATE productos SET nombre = %s, descripcion = %s, precio = %s, stock = %s,categoria_id = %s, imagen = %s, talla = %s WHERE id = %s",
+    #                   ( nombre, descripcion,precio,stock, id_Categoria, imagen, talla, id))
+    #conexion.commit()
+    #conexion.close()
+
+def actualizar_producto(nombre, descripcion, precio, stock, id_Categoria, imagen, talla, id):
     conexion = obtener_conexion()
     with conexion.cursor() as cursor:
-        cursor.execute("UPDATE productos SET nombre = %s, descripcion = %s, precio = %s, stock = %s,categoria_id = %s, imagen = %s, talla = %s WHERE id = %s",
-                       ( nombre, descripcion,precio,stock, id_Categoria, imagen, talla, id))
+        cursor.execute("UPDATE productos SET nombre = %s, descripcion = %s, precio = %s, stock = %s, categoria_id = %s, imagen = %s, talla = %s WHERE id = %s",
+                       (nombre, descripcion, precio, stock, id_Categoria, imagen, talla, id))
+        filas_afectadas = cursor.rowcount
     conexion.commit()
     conexion.close()
+    return filas_afectadas > 0
+
 
 # Función para obtener todos los productos y enviarlos a la plantilla hombre.html
 def obtener_productos():
@@ -147,3 +208,71 @@ def guardar_detalle(id_producto, cantidad, id_pedido):
         conexion.rollback()
     finally:
         conexion.close()
+
+
+
+ #####apis
+
+def obtener_nombre_categoriaApi():
+    conexion = obtener_conexion()
+    tipos_documento = []
+    with conexion.cursor() as cursor:
+        cursor.execute("SELECT id, nombre, descripcion,fecha_creacion FROM categorias")
+        tipos_documento = cursor.fetchall()
+    conexion.close()
+    return tipos_documento
+
+def obtener_nombre_categoriaApixid(id):
+    conexion = obtener_conexion()
+    tipos_documento = []
+    with conexion.cursor() as cursor:
+        cursor.execute("SELECT id, nombre, descripcion,fecha_creacion FROM categorias WHERE id = %s", (id,))
+        tipos_documento = cursor.fetchall()
+    conexion.close()
+    return tipos_documento
+
+def insertar_categoria(nombre,descripcion,fecha_creacion):
+    conexion = obtener_conexion()
+    with conexion.cursor() as cursor:
+        cursor.execute("INSERT INTO categorias(nombre, descripcion, fecha_creacion) VALUES (%s, %s, %s)", (nombre, descripcion, fecha_creacion))
+        ultimo_id = cursor.lastrowid
+    conexion.commit()
+    conexion.close()
+    return ultimo_id
+
+#def actualizar_categoria(nombre,descripcion,fecha_creacion,id):
+ #  conexion = obtener_conexion()
+  #  with conexion.cursor() as cursor:
+  #      cursor.execute("UPDATE categorias SET nombre = %s, descripcion = %s, fecha_creacion = %s WHERE id = %s", (nombre, descripcion, fecha_creacion, id))
+
+   # conexion.commit()
+    #conexion.close()
+    #return id
+
+def actualizar_categoria(nombre, descripcion, fecha_creacion, id):
+    conexion = obtener_conexion()
+    with conexion.cursor() as cursor:
+        cursor.execute("UPDATE categorias SET nombre = %s, descripcion = %s, fecha_creacion = %s WHERE id = %s", (nombre, descripcion, fecha_creacion, id))
+        filas_afectadas = cursor.rowcount
+    conexion.commit()
+    conexion.close()
+    return filas_afectadas > 0
+
+
+#def eliminar_categoria(id):
+ #   conexion = obtener_conexion()
+  #  with conexion.cursor() as cursor:
+   #     cursor.execute("DELETE FROM categorias WHERE id = %s", (id,))
+#    conexion.commit()
+ #  conexion.close()
+  #  return id
+
+
+def eliminar_categoria(id):
+    conexion = obtener_conexion()
+    with conexion.cursor() as cursor:
+        cursor.execute("DELETE FROM categorias WHERE id = %s", (id,))
+        filas_afectadas = cursor.rowcount
+    conexion.commit()
+    conexion.close()
+    return filas_afectadas > 0

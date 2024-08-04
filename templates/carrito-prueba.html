@@ -50,7 +50,7 @@
                             <td>
                                 <form method="post" action="{{ url_for('remove_from_cart') }}">
                                     <input type="hidden" name="product_id" value="{{ product_id }}">
-                                    <button type="submit" class="btn btn-danger">Eliminar</button>
+                                    <button type="submit" onclick="confirmarAccion(this)" class="btn btn-danger">Eliminar</button>
                                 </form>
                             </td>
 
@@ -81,7 +81,7 @@
                             {% endfor %}
                             <li><strong>Total:</strong> S/.{{ total | round(2) }}</li>
                         </ul>
-                        <button id="checkout" class="btn btn-warning btn-block"><i
+                        <button id="checkout" onclick="confirmarAccion(this)" class="btn btn-warning btn-block"><i
                                 class="fa-solid fa-credit-card"></i>&nbsp;&nbsp;IR A PAGAR</button>
                     </form>
                 </div>
@@ -98,7 +98,7 @@
             </div>
         </div>
         <form method="post" action="{{ url_for('clear_cart') }}">
-            <button type="submit" class="btn btn-danger mt-3"><i class="fa-solid fa-trash"></i>&nbsp;&nbsp;Vaciar
+            <button type="submit" onclick="confirmarAccion(this)" class="btn btn-danger mt-3"><i class="fa-solid fa-trash"></i>&nbsp;&nbsp;Vaciar
                 Carrito</button>
         </form>
     </div>

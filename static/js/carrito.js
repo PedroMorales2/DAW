@@ -106,13 +106,13 @@
 
 function removeFromCart(product_id) {
     $.post('/remove_from_cart', {product_id: product_id}, function(response) {
-        location.reload();  // Recarga la página para reflejar los cambios en el carrito
+        location.reload();
     });
 }
 
 function clearCart() {
     $.post('/clear_cart', {}, function(response) {
-        location.reload();  // Recarga la página para mostrar el carrito vacío
+        location.reload();
     });
 }
 
@@ -121,4 +121,9 @@ $(document).ready(function() {
         clearCart();
     });
 });
+
+
+
+
+
 

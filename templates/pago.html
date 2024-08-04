@@ -1,7 +1,7 @@
 {% extends 'layout.html' %}
 {% block titulo %}Golden Store{% endblock %}
 {% block custom_css %}
-<!-- Espacio para CSS adicional si es necesario -->
+<link rel="stylesheet" href="../static/css/index.css">
 {% endblock %}
 
 {% block contenido %}
@@ -12,18 +12,21 @@
         display: block;
         margin-left: auto;
         margin-right: auto;
-    }
-    .card-representation {
-        background-color: #2c3034;
         border-radius: 8px;
-        padding: 20px;
-        box-shadow: 0 2px 5px rgba(255, 255, 255, 0.5);
-        margin-top: 20px;
-        display: none; /* inicialmente oculto */
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
     }
     .card-details {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+        border-radius: 5px;
+        padding: 15px;
+        margin-top: 10px;
+        display: none; /* inicialmente oculto */
+    }
+    .card-details p {
+        margin: 0;
         font-size: 14px;
-        color: #ffffff;
+        color: #333;
     }
     .container-total {
         text-align: right;
@@ -32,6 +35,48 @@
     }
     .table-responsive {
         margin-bottom: 20px;
+    }
+    .custom-select {
+        width: 100%;
+        height: 40px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        padding: 5px;
+        font-size: 16px;
+        color: #333;
+    }
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+        color: #fff;
+        padding: 10px 20px;
+        border-radius: 5px;
+        font-size: 16px;
+    }
+    .btn-primary:hover {
+        background-color: #0056b3;
+        border-color: #004085;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+    th, td {
+        padding: 12px;
+        text-align: left;
+        border-bottom: 1px solid #dee2e6;
+    }
+    th {
+        background-color: #343a40;
+        color: #fff;
+        font-weight: bold;
+    }
+    tr:nth-child(even) {
+        background-color: #f8f9fa;
+    }
+    tr:hover {
+        background-color: #e9ecef;
     }
 </style>
 
@@ -46,14 +91,14 @@
         {% endfor %}
     {% endif %}
     {% endwith %}
-    
+
     <form action="/pagar_pedidossssss/{{ ped[0] }}" method="post">
         <h2 class="mt-4 mb-4">Fecha del pedido: {{ ped[1] }}</h2>
         <div class="row">
             <div class="col-md-8">
                 <div class="table-responsive">
-                    <table class="table table-striped table-bordered">
-                        <thead class="thead-dark">
+                    <table class="table">
+                        <thead>
                             <tr>
                                 <th>Imagen</th>
                                 <th>Producto</th>
@@ -79,27 +124,26 @@
             </div>
             <div class="col-md-4">
                 <h3>Seleccione una tarjeta</h3>
-                <select name="tarjeta" id="cardSelector" class="form-control" onchange="updateCardDetails(this)">
+                <select name="tarjeta" id="cardSelector" class="custom-select" onchange="updateCardDetails(this)">
                     <option value="">Seleccione una tarjeta</option>
                     {% for tar in tarjeta %}
                     <option value="{{ tar[0] }}" data-number="{{ tar[1] }}" data-expiry="{{ tar[3] }}" data-name="{{ tar[2] }}">
                         {{ tar[1] }} - {{ tar[2] }}
                     </option>
                     {% endfor %}
+                    <option value="agregar_tarjeta">Agregar nueva tarjeta</option>
                 </select>
-                <div id="cardDetails" class="card-representation">
-                    <div id="cardNumber" style="color:#ffffff;">#### #### #### ####</div>
-                    <div class="card-details">
-                        <div id="cardExpiry">VALIDO</div>
-                        <div id="cardName">NOMBRE DEL TITULAR</div>
-                    </div>
+                <div id="cardDetails" class="card-details">
+                    <p><strong>Número de tarjeta:</strong> <span id="cardNumber">#### #### #### ####</span></p>
+                    <p><strong>Validez:</strong> <span id="cardExpiry">MM/AA</span></p>
+                    <p><strong>Titular:</strong> <span id="cardName">Nombre del Titular</span></p>
                 </div>
             </div>
         </div>
         <div class="container-total">
             <h2>Total: <input type="text" value="{{ ped[2] }}" name="total" readonly></h2>
         </div>
-        <button type="submit" class="btn btn-primary">Pagar</button>
+        <button type="submit" onclick="confirmarAccion(this)" class="btn btn-primary">Pagar</button>
     </form>
 </div>
 
@@ -108,14 +152,17 @@
         var cardDetailsDiv = document.getElementById('cardDetails');
         var selectedOption = selectElement.options[selectElement.selectedIndex];
 
-        if (selectElement.value) {
-            document.getElementById('cardNumber').textContent = selectedOption.getAttribute('data-number'); // Actualiza el número de la tarjeta
-            document.getElementById('cardExpiry').textContent = "Válido hasta: " + selectedOption.getAttribute('data-expiry'); // Actualiza la validez
-            document.getElementById('cardName').textContent = "Titular: " + selectedOption.getAttribute('data-name'); // Actualiza el nombre del titular
+        if (selectElement.value === "agregar_tarjeta") {
+            window.location.href = "{{ url_for('id_a_agregar_tarjeta') }}";
+        } else if (selectElement.value) {
+            document.getElementById('cardNumber').textContent = selectedOption.getAttribute('data-number');
+            document.getElementById('cardExpiry').textContent = selectedOption.getAttribute('data-expiry');
+            document.getElementById('cardName').textContent = selectedOption.getAttribute('data-name');
             cardDetailsDiv.style.display = 'block';
         } else {
-            cardDetailsDiv.style.display = 'none'; // Oculta los detalles si no hay selección
+            cardDetailsDiv.style.display = 'none';
         }
     }
 </script>
+
 {% endblock %}

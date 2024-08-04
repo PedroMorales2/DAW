@@ -20,6 +20,7 @@
 </head>
 
 <body>
+
     <!-- Navegador -->
     <header>
         <nav class="navbar navbar-expand-lg">
@@ -71,11 +72,6 @@
                                     style="color: #000000;"></i></a>
                         </li>
 
-                        <!-- Favoritos -->
-                        <li class="nav-item me-2">
-                            <a class="nav-link" href="#"><i class="fa-regular fa-heart" style="color: #000000;"></i></a>
-                        </li>
-
                         <!-- Carrito -->
                         <li class="nav-item me-2">
                             <a class="nav-link" href="/cart"><i class="fa-solid fa-cart-shopping"
@@ -102,8 +98,7 @@
                                 {{ session.get('user_name') }}
                             </a>
                             <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                                <a class="dropdown-item" href="/verContactos/{{ session.get('user_id') }}">Ver
-                                    Contactos</a>
+                                <a class="dropdown-item" href="/verContactos/{{ session.get('user_id') }}">Perfil</a>
                                 <input type="text" value="{{ session.get('user_id') }}" hidden>
                                 <a class="nav-link text-dark btn btn-outline-light"
                                     href="{{ url_for('admin_home') }}">Administración</a>
@@ -144,14 +139,15 @@
                                     <button type="button" class="btn-close btn-close-dark" data-bs-dismiss="modal"
                                         aria-label="Close"></button>
                                 </div>
+
                                 <div class="modal-body">
                                     <p class="text-muted">Descubre la moda que te define.</p>
                                     <div id="alertContainer"></div> <!-- Contenedor para la alerta -->
                                     <form id="loginForm" action="{{ url_for('login') }}" method="POST">
                                         <div class="mb-3">
-                                            <label for="username" class="form-label">Ingresar gmail</label>
+                                            <label for="username" class="form-label">Ingresa tu email</label>
                                             <input type="text" name="usuario" class="form-control" id="username"
-                                                placeholder="Ingrese su usuario">
+                                                placeholder="Ingrese su email">
                                         </div>
                                         <div class="mb-3">
                                             <label for="password" class="form-label">Contraseña</label>
@@ -292,6 +288,39 @@
             Golden Store | Copyright © 2024
         </div>
     </footer>
+
+
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            window.confirmarAccion = function (button) {
+                const formulario = button.form;
+                event.preventDefault();
+
+                Swal.fire({
+                    title: '¿Estás seguro?',
+                    text: "¿Quieres enviar esta información?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Sí, enviar!',
+                    cancelButtonText: 'No, cancelar',
+                    reverseButtons: true
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        formulario.submit();
+                    }
+                });
+            };
+        });
+
+    </script>
+
 
     <!-- Scripts -->
     {% block custom_js %}
